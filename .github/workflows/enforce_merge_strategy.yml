@@ -15,7 +15,7 @@ jobs:
       run: echo "This workflow only runs for PRs to master branch."
 
     - name: Enforce No Squash Merging
-      if: github.event.pull_request.merge_method == 'squash'
+      if: github.event.pull_request.merge_method == 'merge'
       run: |
         echo "Squash merging is not allowed into the master branch."
         exit 1
