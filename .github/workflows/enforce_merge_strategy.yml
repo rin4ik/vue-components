@@ -12,7 +12,6 @@ jobs:
     steps:
     - name: Check base branch
       if: github.base_ref == 'master'
-      run: echo "This workflow only runs for PRs to master branch."
       run: echo github.event.pull_request.merge_method
 
     - name: Enforce No Squash Merging
