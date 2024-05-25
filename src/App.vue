@@ -1,10 +1,8 @@
 <template>
   <div class="min-h-screen bg-grey-darker p-8">
     <div class="max-w-sm mx-auto">
-      <!-- 01 -->
       <user-settings-form :account-id="accountId"></user-settings-form>
 
-      <!-- 02 -->
       <div class="card">
         <label class="block">
           <span class="form-label mb-2">Select a date</span>

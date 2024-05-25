@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check base branch
-      if: github.base_ref != 'master'
+      if: github.base_ref == 'master'
       run: echo "This workflow only runs for PRs to master branch."
 
     - name: Enforce No Squash Merging
