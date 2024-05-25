@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check base branch
-      if: github.base_ref == 'master'
-      run: echo github.event.pull_request.merge_method
+      if: github.base_ref == 'master' 
+      run: echo github.event.pull_request.merge_method 
 
     - name: Enforce No Squash Merging
       if: github.event.pull_request.merge_method == 'merge'
