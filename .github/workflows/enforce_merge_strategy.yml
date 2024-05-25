@@ -1,21 +1,16 @@
-name: Enforce Merge Strategy
+name: Enforce No Squash Merging
 
 on:
   pull_request:
-    branches:
-      - master
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  check-merge-type:
+  check-merge-method:
     runs-on: ubuntu-latest
     steps:
-    - name: Check base branch
-      if: github.base_ref == 'master' 
-      run: echo github.event.pull_request.merge_method 
-
-    - name: Enforce No Squash Merging
-      if: github.event.pull_request.merge_method == 'merge'
-      run: |
-        echo "Squash merging is not allowed into the master branch."
-        exit 1
+      - name: Check if squash merge is disabled
+        run: |
+          if [ "${{ github.event.pull_request.merge_commit_sha }}" == "" ]; then
+            echo "Squash merging is not allowed. Please use 'Create a merge commit' or 'Rebase and merge'."
+            exit 1
+          fi
