@@ -1,0 +1,21 @@
+name: Enforce Merge Strategy
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  check-merge-type:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check base branch
+      if: github.base_ref != 'master'
+      run: echo "This workflow only runs for PRs to master branch."
+
+    - name: Enforce No Squash Merging
+      if: github.event.pull_request.merge_method == 'squash'
+      run: |
+        echo "Squash merging is not allowed into the master branch."
+        exit 1
