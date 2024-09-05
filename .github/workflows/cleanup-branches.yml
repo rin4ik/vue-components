@@ -12,11 +12,17 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
-    - name: Delete branch if it's not master or stand/release
+    - name: Delete branch if it's not a protected branch
       run: |
         branch_name=${{ github.event.pull_request.head.ref }}
-        if [[ "$branch_name" != "master" && "$branch_name" != "stand/release" ]]; then
-          git push origin --delete $branch_name
+        if [[ ! "$branch_name" =~ ^(master|stand/release|beta/nalog)$ ]]; then
+          if git show-ref --verify --quiet refs/heads/$branch_name; then
+            git push origin --delete $branch_name
+          else
+            echo "Branch $branch_name already deleted."
+          fi
+        else
+          echo "Branch $branch_name is protected and will not be deleted."
         fi
