@@ -1,0 +1,22 @@
+name: Cleanup Branch
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Delete branch if it's not master or stand/release
+      run: |
+        branch_name=${{ github.event.pull_request.head.ref }}
+        if [[ "$branch_name" != "master" && "$branch_name" != "stand/release" ]]; then
+          git push origin --delete $branch_name
+        fi
