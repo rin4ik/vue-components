@@ -23,4 +23,6 @@ jobs:
           else
             echo "Branch $branch_name already deleted."
           fi
+        else
+          echo "Branch $branch_name is protected and will not be deleted."
         fi
