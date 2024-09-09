@@ -25,17 +25,21 @@ jobs:
           string: ${{ github.event.pull_request.body }}
           replace-with: ${{ github.head_ref }}
 
-      - name: Prepare branch stand name
+      - name: Prepare stand branch name
         id: prepared_stand_branch_name
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '(feature|fix|hotfix)\/'
           string: ${{ github.head_ref }}
-          replace-with: '' # Remove prefix
+          replace-with: ''
 
-      - name: Format branch stand name
-        id: formatted_stand_branch_name
-        run: echo "::set-output name=stand_branch_name::${{ steps.prepared_stand_branch_name.outputs.replaced | toLowerCase() }}"
+      - name: Format stand branch for links
+        id: formatted_stand_branch
+        uses: frabert/replace-string-action@v2.0
+        with:
+          pattern: '\/'
+          string: ${{ steps.prepared_stand_branch_name.outputs.replaced }}
+          replace-with: '-'
 
       - name: Add stand link to body
         id: body_with_stand_link
@@ -43,7 +47,7 @@ jobs:
         with:
           pattern: '%BRANCH_STAND%'
           string: ${{ steps.body_with_build_link.outputs.replaced }}
-          replace-with: ${{ steps.formatted_stand_branch_name.outputs.stand_branch_name }}
+          replace-with: ${{ steps.formatted_stand_branch.outputs.replaced }}
 
       - name: PR body replace
         uses: AsasInnab/pr-body-action@v1
