@@ -1,4 +1,4 @@
-name: Update-link
+name: Update PR Description
 
 on:
   pull_request:
@@ -12,22 +12,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Define string replacements
+      - name: Define and set string replacements
         run: |
           echo "BRANCH_BUILD=${{ github.head_ref }}" >> $GITHUB_ENV
-          STAND_BRANCH=$(echo "${{ github.head_ref }}" | sed 's/\//-/g')
+          STAND_BRANCH=${{ github.head_ref//\//- }}
           echo "STAND_BRANCH=$STAND_BRANCH" >> $GITHUB_ENV
-          JIRA_STAND=$(echo "${{ github.head_ref }}" | sed 's/^\(feature\|fix\|hotfix\)\///g')
-          echo "JIRA_STAND=$JIRA_STAND" >> $GITHUB_ENV
-          JIRA_BRANCH=$(echo "${{ github.head_ref }}" | sed 's/^\(feature\|fix\|hotfix\)\/B2CFRONT-//g')
-          echo "JIRA_BRANCH=$JIRA_BRANCH" >> $GITHUB_ENV
+          JIRA_TASK=${{ github.head_ref#*/ }}
+          echo "JIRA_TASK=$JIRA_TASK" >> $GITHUB_ENV
+          JIRA_TASK_NUMBER=${{ JIRA_TASK#B2CFRONT- }}
+          echo "JIRA_TASK_NUMBER=$JIRA_TASK_NUMBER" >> $GITHUB_ENV
 
-      - name: Add build link to body
-        id: body_with_build_link
+      - name: Add build, stand, and Jira links to PR body
+        id: update_body
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '%BRANCH_BUILD%'
@@ -35,23 +35,21 @@ jobs:
           replace-with: ${{ env.BRANCH_BUILD }}
 
       - name: Add stand link to body
-        id: body_with_stand_link
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '%BRANCH_STAND%'
-          string: ${{ steps.body_with_build_link.outputs.replaced }}
-          replace-with: ${{ env.JIRA_STAND }}
+          string: ${{ steps.update_body.outputs.replaced }}
+          replace-with: ${{ env.JIRA_TASK }}
 
-      - name: Add jira link to body
-        id: body_with_jira_link
+      - name: Add Jira link to body
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '%JIRA%'
-          string: ${{ steps.body_with_stand_link.outputs.replaced }}
-          replace-with: ${{ env.JIRA_BRANCH }}
+          string: ${{ steps.update_body.outputs.replaced }}
+          replace-with: ${{ env.JIRA_TASK_NUMBER }}
 
-      - name: PR body replace
+      - name: Update PR body
         uses: AsasInnab/pr-body-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ steps.body_with_jira_link.outputs.replaced }}
+          body: ${{ steps.update_body.outputs.replaced }}
