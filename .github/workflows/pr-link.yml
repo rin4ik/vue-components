@@ -1,4 +1,4 @@
-name: Update PR Description
+name: Update-link
 
 on:
   pull_request:
@@ -8,12 +8,12 @@ on:
 
 jobs:
   replace-link:
-    if: startsWith(github.base_ref, 'stand/release')
+    if: endsWith(github.base_ref, 'stand/release') == true
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}
 
@@ -25,22 +25,28 @@ jobs:
           string: ${{ github.event.pull_request.body }}
           replace-with: ${{ github.head_ref }}
 
-      - name: Prepare stand branch name (remove feature prefix and replace / with -)
-        run: |
-          stand_branch_name=$(echo "${{ github.head_ref }}" | sed -E 's/(feature|fix|hotfix)\///g' | tr '[:upper:]' '[:lower:]')
-          echo "::set-output name=stand_name::${stand_branch_name}"
-        id: get_stand_branch_name
+      - name: Prepare branch stand name
+        id: prepared_stand_branch_name
+        uses: frabert/replace-string-action@v2.0
+        with:
+          pattern: '(feature|fix|hotfix)\/'
+          string: ${{ github.head_ref }}
+          replace-with: '' # Remove prefix
+
+      - name: Format branch stand name
+        id: formatted_stand_branch_name
+        run: echo "::set-output name=stand_branch_name::${{ steps.prepared_stand_branch_name.outputs.replaced | toLowerCase() }}"
 
       - name: Add stand link to body
         id: body_with_stand_link
-        run: |
-          body="${{ steps.body_with_build_link.outputs.replaced }}"
-          stand_name="${{ steps.get_stand_branch_name.outputs.stand_name }}"
-          updated_body=$(echo "$body" | sed "s/%BRANCH_STAND%/${stand_name}/g")
-          echo "::set-output name=updated_body::${updated_body}"
+        uses: frabert/replace-string-action@v2.0
+        with:
+          pattern: '%BRANCH_STAND%'
+          string: ${{ steps.body_with_build_link.outputs.replaced }}
+          replace-with: ${{ steps.formatted_stand_branch_name.outputs.stand_branch_name }}
 
       - name: PR body replace
         uses: AsasInnab/pr-body-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ steps.body_with_stand_link.outputs.updated_body }}
+          body: ${{ steps.body_with_stand_link.outputs.replaced }}
