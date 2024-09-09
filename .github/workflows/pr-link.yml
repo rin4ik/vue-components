@@ -1,4 +1,4 @@
-name: Update-link
+name: Update PR Description
 
 on:
   pull_request:
