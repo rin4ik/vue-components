@@ -35,6 +35,7 @@ jobs:
           replace-with: ${{ env.BRANCH_BUILD }}
 
       - name: Add stand link to body
+        id: update_stand_link
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '%BRANCH_STAND%'
@@ -42,14 +43,15 @@ jobs:
           replace-with: ${{ env.JIRA_TASK }}
 
       - name: Add Jira link to body
+        id: update_jira_link
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '%JIRA%'
-          string: ${{ steps.update_body.outputs.replaced }}
+          string: ${{ steps.update_stand_link.outputs.replaced }}
           replace-with: ${{ env.JIRA_TASK_NUMBER }}
 
       - name: Update PR body
         uses: AsasInnab/pr-body-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ steps.update_body.outputs.replaced }}
+          body: ${{ steps.update_jira_link.outputs.replaced }}
