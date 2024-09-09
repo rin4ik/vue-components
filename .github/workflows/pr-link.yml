@@ -26,32 +26,32 @@ jobs:
           JIRA_TASK_NUMBER=$(echo "$JIRA_TASK" | sed 's/^B2CFRONT-//g')
           echo "JIRA_TASK_NUMBER=$JIRA_TASK_NUMBER" >> $GITHUB_ENV
 
-      - name: Add build, stand, and Jira links to PR body
-        id: update_body
+      - name: Replace %BRANCH_BUILD% in PR body
+        id: update_body_build
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '%BRANCH_BUILD%'
           string: ${{ github.event.pull_request.body }}
           replace-with: ${{ env.BRANCH_BUILD }}
 
-      - name: Add stand link to body
-        id: update_stand_link
+      - name: Replace %BRANCH_STAND% in PR body
+        id: update_body_stand
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '%BRANCH_STAND%'
-          string: ${{ steps.update_body.outputs.replaced }}
-          replace-with: ${{ env.JIRA_TASK }}
+          string: ${{ steps.update_body_build.outputs.replaced }}
+          replace-with: ${{ env.STAND_BRANCH }}
 
-      - name: Add Jira link to body
-        id: update_jira_link
+      - name: Replace %JIRA% in PR body
+        id: update_body_jira
         uses: frabert/replace-string-action@v2.0
         with:
           pattern: '%JIRA%'
-          string: ${{ steps.update_stand_link.outputs.replaced }}
+          string: ${{ steps.update_body_stand.outputs.replaced }}
           replace-with: ${{ env.JIRA_TASK_NUMBER }}
 
-      - name: Update PR body
+      - name: Update PR body with final result
         uses: AsasInnab/pr-body-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ steps.update_jira_link.outputs.replaced }}
+          body: ${{ steps.update_body_jira.outputs.replaced }}
