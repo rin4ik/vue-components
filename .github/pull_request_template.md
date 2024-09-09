@@ -1,6 +1,6 @@
 [![Build Status](https://drone.daymarket.uz/api/badges/DayMarket/customers-frontend/status.svg?branch=%BRANCH_BUILD%)](https://drone.daymarket.uz/DayMarket/customers-frontend)
 
-> Ссылка на [стенд](https://%BRANCH_STAND%-b2c.dev.cluster.daymarket.uz/ru)
+> Ссылка на [стенд](https://%BRANCH_STANDs%-b2c.dev.cluster.daymarket.uz/ru)
 > Ссылка на [задачу](https://jira.uzum.com/browse/%BRANCH_STAND%)
 
 - Заголовок PR'а отвечает на вопрос "Что сделали?" и отражает суть задачи, в заголовке нет сокращений и по минимуму используются технические термины`
