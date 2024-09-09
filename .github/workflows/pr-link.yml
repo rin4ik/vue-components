@@ -19,11 +19,11 @@ jobs:
       - name: Define and set string replacements
         run: |
           echo "BRANCH_BUILD=${{ github.head_ref }}" >> $GITHUB_ENV
-          STAND_BRANCH=${{ github.head_ref//\//- }}
+          STAND_BRANCH=$(echo "${{ github.head_ref }}" | sed 's/\//-/g')
           echo "STAND_BRANCH=$STAND_BRANCH" >> $GITHUB_ENV
-          JIRA_TASK=${{ github.head_ref#*/ }}
+          JIRA_TASK=$(echo "${{ github.head_ref }}" | sed 's/^\(feature\|fix\|hotfix\)\///g')
           echo "JIRA_TASK=$JIRA_TASK" >> $GITHUB_ENV
-          JIRA_TASK_NUMBER=${{ JIRA_TASK#B2CFRONT- }}
+          JIRA_TASK_NUMBER=$(echo "$JIRA_TASK" | sed 's/^B2CFRONT-//g')
           echo "JIRA_TASK_NUMBER=$JIRA_TASK_NUMBER" >> $GITHUB_ENV
 
       - name: Add build, stand, and Jira links to PR body
