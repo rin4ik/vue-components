@@ -1,4 +1,4 @@
-name: Update PR Description
+name: Update-link
 
 on:
   pull_request:
@@ -8,14 +8,23 @@ on:
 
 jobs:
   replace-link:
-    if: startsWith(github.base_ref, 'stand/release')
-
+    if: endsWith(github.base_ref, 'stand/release') == true
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}
+
+      - name: Define string replacements
+        run: |
+          echo "BRANCH_BUILD=${{ github.head_ref }}" >> $GITHUB_ENV
+          STAND_BRANCH=$(echo "${{ github.head_ref }}" | sed 's/\//-/g')
+          echo "STAND_BRANCH=$STAND_BRANCH" >> $GITHUB_ENV
+          JIRA_STAND=$(echo "${{ github.head_ref }}" | sed 's/^\(feature\|fix\|hotfix\)\///g')
+          echo "JIRA_STAND=$JIRA_STAND" >> $GITHUB_ENV
+          JIRA_BRANCH=$(echo "${{ github.head_ref }}" | sed 's/^\(feature\|fix\|hotfix\)\/B2CFRONT-//g')
+          echo "JIRA_BRANCH=$JIRA_BRANCH" >> $GITHUB_ENV
 
       - name: Add build link to body
         id: body_with_build_link
@@ -23,15 +32,7 @@ jobs:
         with:
           pattern: '%BRANCH_BUILD%'
           string: ${{ github.event.pull_request.body }}
-          replace-with: ${{ github.head_ref }}
-
-      - name: Prepare stand branch name
-        id: prepared_stand_branch_name
-        run: echo "${{ github.head_ref }}" | sed 's/\//-/g' > stand_branch_name.txt
-
-      - name: Get stand branch name
-        id: get_stand_branch_name
-        run: echo "::set-output name=stand_name::$(cat stand_branch_name.txt)"
+          replace-with: ${{ env.BRANCH_BUILD }}
 
       - name: Add stand link to body
         id: body_with_stand_link
@@ -39,10 +40,18 @@ jobs:
         with:
           pattern: '%BRANCH_STAND%'
           string: ${{ steps.body_with_build_link.outputs.replaced }}
-          replace-with: ${{ steps.get_stand_branch_name.outputs.stand_name }}
+          replace-with: ${{ env.JIRA_STAND }}
+
+      - name: Add jira link to body
+        id: body_with_jira_link
+        uses: frabert/replace-string-action@v2.0
+        with:
+          pattern: '%JIRA%'
+          string: ${{ steps.body_with_stand_link.outputs.replaced }}
+          replace-with: ${{ env.JIRA_BRANCH }}
 
       - name: PR body replace
         uses: AsasInnab/pr-body-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ steps.body_with_stand_link.outputs.replaced }}
+          body: ${{ steps.body_with_jira_link.outputs.replaced }}
