@@ -31,15 +31,15 @@ jobs:
         with:
           pattern: '(feature|fix|hotfix)\/'
           string: ${{ github.head_ref }}
-          replace-with: ''
+          replace-with: ''  # This removes the feature/ prefix
 
       - name: Format stand branch for links
         id: formatted_stand_branch
         uses: frabert/replace-string-action@v2.0
         with:
-          pattern: '\/'
+          pattern: '[A-Z]+(?=\d+-)'
           string: ${{ steps.prepared_stand_branch_name.outputs.replaced }}
-          replace-with: '-'
+          replace-with: '${{ match }}'.toLowerCase()  # Converts to lowercase
 
       - name: Add stand link to body
         id: body_with_stand_link
