@@ -23,6 +23,22 @@ jobs:
           string: ${{ github.event.pull_request.body }}
           replace-with: ${{ github.head_ref }}
 
+      - name: Prepare stand branch name
+        id: prepared_stand_branch_name
+        uses: frabert/replace-string-action@v2.0
+        with:
+          pattern: '\/'
+          string: ${{ github.head_ref }}
+          replace-with: '-'
+
+      - name: Add stand link to body
+        id: body_with_stand_link
+        uses: frabert/replace-string-action@v2.0
+        with:
+          pattern: '%BRANCH_STAND%'
+          string: ${{ steps.body_with_build_link.outputs.replaced }}
+          replace-with: ${{ steps.prepared_stand_branch_name.outputs.replaced }}
+
       - name: Prepare jira branch name
         id: prepared_jira_branch_name
         uses: frabert/replace-string-action@v2.0
@@ -30,14 +46,6 @@ jobs:
           pattern: '(feature|fix|hotfix)\/'
           string: ${{ github.head_ref }}
           replace-with: ''
-
-      - name: Add jira link to body
-        id: body_with_jira_link
-        uses: frabert/replace-string-action@v2.0
-        with:
-          pattern: '%JIRA%'
-          string: ${{ steps.body_with_stand_link.outputs.replaced }}
-          replace-with: ${{ steps.prepared_jira_branch_name.outputs.replaced }}
 
       - name: PR body replace
         uses: AsasInnab/pr-body-action@v1
