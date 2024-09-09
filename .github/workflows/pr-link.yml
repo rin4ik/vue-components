@@ -25,24 +25,22 @@ jobs:
           string: ${{ github.event.pull_request.body }}
           replace-with: ${{ github.head_ref }}
 
-      - name: Prepare stand branch name
-        id: prepared_stand_branch_name
-        run: echo "${{ github.head_ref }}" | sed 's/\//-/g' > stand_branch_name.txt
-
-      - name: Get stand branch name
+      - name: Prepare stand branch name (remove feature prefix and replace / with -)
+        run: |
+          stand_branch_name=$(echo "${{ github.head_ref }}" | sed -E 's/(feature|fix|hotfix)\///g' | tr '[:upper:]' '[:lower:]')
+          echo "::set-output name=stand_name::${stand_branch_name}"
         id: get_stand_branch_name
-        run: echo "::set-output name=stand_name::$(cat stand_branch_name.txt)"
 
       - name: Add stand link to body
         id: body_with_stand_link
-        uses: frabert/replace-string-action@v2.0
-        with:
-          pattern: '%BRANCH_STAND%'
-          string: ${{ steps.body_with_build_link.outputs.replaced }}
-          replace-with: ${{ steps.get_stand_branch_name.outputs.stand_name }}
+        run: |
+          body="${{ steps.body_with_build_link.outputs.replaced }}"
+          stand_name="${{ steps.get_stand_branch_name.outputs.stand_name }}"
+          updated_body=$(echo "$body" | sed "s/%BRANCH_STAND%/${stand_name}/g")
+          echo "::set-output name=updated_body::${updated_body}"
 
       - name: PR body replace
         uses: AsasInnab/pr-body-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ steps.body_with_stand_link.outputs.replaced }}
+          body: ${{ steps.body_with_stand_link.outputs.updated_body }}
